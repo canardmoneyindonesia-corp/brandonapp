@@ -1,0 +1,139 @@
+# Brandon Stays — hourly apartment rental manager
+
+An installable PWA for running short-stay, **hourly** apartment rentals: units and
+photos, a day/week schedule, booking log, rule-based pricing, income tracking and a
+WhatsApp inbox. Airbnb-style interface, IDR amounts, English labels.
+
+Owner/manager only — there is no public guest-facing booking page.
+
+---
+
+## Stack
+
+| Piece | Choice |
+|---|---|
+| Framework | Next.js 15 (App Router, TypeScript, React 19) |
+| Styling | Tailwind CSS v4, custom Airbnb-flavoured token set |
+| Database | Local PostgreSQL 18 via `pg` (no ORM, plain SQL) |
+| Images | Uploaded to `data/uploads/`, served through `/api/uploads/<file>` |
+| PWA | Hand-written `public/sw.js` + `manifest.webmanifest`, generated icons |
+| Charts | Inline HTML/CSS bars, validated colourblind-safe palette |
+
+No native modules, no image libraries, no cloud accounts.
+
+---
+
+## Setup
+
+```bash
+npm install          # already done
+npm run assets       # PWA icons + placeholder unit photos (already generated)
+```
+
+`.env.local` already points at the Neon database (`neondb`, ap-southeast-1) and it
+has been seeded — nothing else to configure.
+
+```bash
+npm run dev          # http://localhost:3009
+```
+
+To point at a different Postgres instead, set `DATABASE_URL` in `.env.local` and
+re-run `npm run db:reset`. If that database does not exist yet, also set
+`ADMIN_DATABASE_URL` (a connection to the `postgres` maintenance DB) — it is used
+**only** to `CREATE DATABASE`, and is skipped entirely when `DATABASE_URL` already
+connects, which is the case for hosted providers like Neon.
+
+`npm run db:reset` is destructive and idempotent — it drops every table and reseeds
+4 units, ~140 bookings across the last 45 days and next 12, payments, expenses,
+7 pricing rules and 6 WhatsApp threads. `npm run db:setup` (no `--reset`) is the
+safe version that refuses to touch an existing schema.
+
+---
+
+## What each screen does
+
+| Route | Purpose |
+|---|---|
+| `/` | Today: revenue, occupancy, unpaid balance, unread messages, today's timeline, next bookings |
+| `/units` `/units/[id]` | Unit cards with photo carousels; detail page with gallery, amenities, photo manager, stats, applicable pricing rules |
+| `/schedule` | Day timeline (units × 24h) with a live "now" line, week strip, per-unit filter, week heat table |
+| `/bookings` `/bookings/[id]` | Filterable log; detail with price breakdown, status switcher, payments ledger |
+| `/bookings/new` | Booking form with a **live quote** that re-prices on every change, plus overlap detection |
+| `/income` | Month report: revenue/expenses/net/collected, daily chart, per-unit table, category and payment-method breakdowns, expense logging |
+| `/pricing` | Rule list with on/off toggles, rule builder, and a price simulator running the real engine |
+| `/inbox` | WhatsApp-style threads, quick-reply templates, guest booking history, one-tap "Book" |
+| `/settings` | Business profile, WhatsApp connection guide, data counts, install prompt |
+
+---
+
+## Pricing engine
+
+`src/lib/pricing.ts` is pure and isomorphic — the booking form calls it in the
+browser for the live quote, and `POST /api/bookings` runs the **same function** on
+the server so a tampered client cannot set its own price.
+
+Order of operations:
+
+1. Hours are rounded up to whole hours, then raised to the unit's minimum.
+2. Each hour is walked individually. `day_of_week`, `time_of_day` (wraps past
+   midnight) and `date_range` rules multiply that hour's rate in priority order,
+   and each rule's contribution is attributed so the guest sees *why* the price moved.
+3. The single most generous qualifying `duration` rule discounts the subtotal.
+4. Cleaning fee, extra-guest fee and any `fee` rules are added.
+
+Seeded rules: weekend +20%, night (22:00–06:00) +15%, 6h+ −10%, 10h+ −20%,
+year-end peak +35%, plus two unit-specific ones.
+
+**Double-booking is impossible**, not merely discouraged — the `bookings` table
+carries a GiST exclusion constraint on `(unit_id, tstzrange(starts_at, ends_at))`
+that Postgres enforces, with cancelled and no-show rows exempt. The booking form
+warns about overlaps before you submit; the database refuses them if you do.
+
+---
+
+## WhatsApp
+
+Ships in **demo mode**: the inbox, send endpoint and Meta Cloud API webhook are all
+built and wired, but outbound messages are recorded locally and never leave the
+machine. The "Simulate reply" button pushes an inbound message through the exact
+same code path the real webhook uses.
+
+To go live, set in `.env.local`:
+
+```ini
+WHATSAPP_MODE=live
+WHATSAPP_PHONE_NUMBER_ID=...
+WHATSAPP_ACCESS_TOKEN=...
+WHATSAPP_VERIFY_TOKEN=any-string-you-choose
+```
+
+then point the Meta webhook at `https://<your-host>/api/whatsapp/webhook` and
+subscribe to the `messages` field. Nothing else changes.
+
+---
+
+## PWA
+
+`npm run assets` generates the icons from scratch — `scripts/gen-assets.mjs`
+contains a small PNG encoder (zlib + hand-rolled CRC32) and a rasteriser, so there
+is no dependency on Sharp or any image library. The same script draws the
+placeholder unit photos.
+
+The service worker is deliberately conservative: **API responses are never cached**
+(availability and money must be live), navigations are network-first with a cached
+fallback, and static assets are cache-first with background refresh. Install from
+the prompt on the Today screen, or Share → Add to Home Screen on iOS.
+
+---
+
+## Layout
+
+```
+db/schema.sql            tables, indexes, the overlap exclusion constraint
+scripts/gen-assets.mjs   PNG encoder + icon/photo rasteriser
+scripts/setup-db.mjs     create database, apply schema, seed demo data
+src/lib/                 db pool, types, IDR/date formatting, pricing engine, queries
+src/components/          UI — shell, timeline, forms, chart, inbox
+src/app/                 pages (server components) and /api routes
+data/uploads/            uploaded photos (gitignored)
+```

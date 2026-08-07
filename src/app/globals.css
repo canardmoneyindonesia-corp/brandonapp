@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens — an Airbnb-flavoured system: Rausch red, near-black ink,
+   hairline borders, 12px card radius, soft lifted shadows, generous whitespace.
+   Deliberately light-only (like the Airbnb app itself) so surfaces stay
+   photo-forward and predictable.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-rausch: #ff385c;
+  --color-rausch-600: #e31c5f;
+  --color-rausch-700: #d70466;
+  --color-rausch-50: #fff5f7;
+
+  --color-ink: #222222;
+  --color-ink-2: #717171;
+  --color-ink-3: #a0a0a0;
+
+  --color-line: #dddddd;
+  --color-hairline: #ebebeb;
+  --color-soft: #f7f7f7;
+  --color-soft-2: #f0efec;
+
+  --color-good: #008a05;
+  --color-good-soft: #e8f5e9;
+  --color-warn: #b46b00;
+  --color-warn-soft: #fff4e0;
+  --color-info: #0b6ac9;
+  --color-info-soft: #eaf3fd;
+  --color-bad: #c13515;
+  --color-bad-soft: #fdeeea;
+
+  /* Validated categorical slots (blue / orange) for the income chart. */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif;
+
+  --radius-xl2: 16px;
+
+  --shadow-card: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-pop: 0 8px 28px rgba(0, 0, 0, 0.18);
+  --shadow-bar: 0 -1px 0 #ebebeb;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+body {
+  /* Room for the mobile tab bar + iOS home indicator. */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@layer components {
+  /* --- surfaces --- */
+  .card {
+    @apply rounded-xl border border-hairline bg-white;
+  }
+  .card-hover {
+    @apply transition-shadow duration-200 hover:shadow-[var(--shadow-card)];
+  }
+  .panel {
+    @apply rounded-2xl border border-hairline bg-white p-5;
+  }
+  .hairline {
+    @apply border-hairline;
+  }
+
+  /* --- buttons ---
+     Tailwind v4 cannot @apply a class defined in @layer components, so every
+     button variant shares the base rule through one grouped selector. */
+  .btn,
+  .btn-primary,
+  .btn-dark,
+  .btn-outline,
+  .btn-ghost,
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
+           transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-primary {
+    @apply bg-rausch text-white hover:bg-rausch-700;
+  }
+  .btn-dark {
+    @apply bg-ink text-white hover:bg-black;
+  }
+  .btn-outline {
+    @apply border border-ink bg-white text-ink hover:bg-soft;
+  }
+  .btn-ghost {
+    @apply border border-line bg-white text-ink hover:bg-soft;
+  }
+  .btn-danger {
+    @apply border border-[#e3b5aa] bg-white text-[var(--color-bad)] hover:bg-[var(--color-bad-soft)];
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-[13px];
+  }
+  .icon-btn {
+    @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line
+           bg-white text-ink transition-colors hover:bg-soft;
+  }
+
+  /* --- forms --- */
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink;
+  }
+  .hint {
+    @apply mt-1 text-xs text-ink-2;
+  }
+  .input,
+  .input-lg {
+    @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm text-ink
+           placeholder:text-ink-3 focus:border-ink focus:outline-none;
+  }
+  .input-lg {
+    @apply py-3 text-base;
+  }
+  select.input {
+    @apply appearance-none bg-[length:16px] bg-[right_0.85rem_center] bg-no-repeat pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23717171' stroke-width='1.6'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  }
+  textarea.input {
+    @apply min-h-24 resize-y;
+  }
+
+  /* --- chips & badges --- */
+  .chip {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line
+           bg-white px-3 py-1.5 text-[13px] font-medium text-ink transition-colors hover:border-ink;
+  }
+  .chip-active {
+    @apply border-ink bg-ink text-white hover:border-ink;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1
+           text-[11px] font-semibold uppercase tracking-wide;
+  }
+
+  /* --- misc --- */
+  .section-title {
+    @apply text-[22px] font-semibold tracking-tight text-ink;
+  }
+  .muted {
+    @apply text-sm text-ink-2;
+  }
+  .divide-hair > * + * {
+    @apply border-t border-hairline;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Skeleton shimmer for loading states */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-soft);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
