@@ -1,0 +1,4 @@
+# This is an internal operations app, not a public listing site.
+# Nothing here should ever appear in a search result.
+User-agent: *
+Disallow: /

@@ -13,12 +13,18 @@ pg.types.setTypeParser(1082, (v) => v);
 // process would leak a new pool per edit until Postgres refuses connections.
 const globalForPg = globalThis as unknown as { __pgPool?: Pool };
 
+// On Vercel every concurrent function gets its own pool, so the per-instance
+// cap has to be small — the Neon pooler endpoint does the real multiplexing.
+// Locally there is one process, so a roomier pool is free performance.
+const SERVERLESS = !!process.env.VERCEL;
+
 export const pool =
   globalForPg.__pgPool ??
   new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 10,
-    idleTimeoutMillis: 30_000,
+    max: SERVERLESS ? 3 : 10,
+    idleTimeoutMillis: SERVERLESS ? 10_000 : 30_000,
+    connectionTimeoutMillis: 10_000,
   });
 
 if (process.env.NODE_ENV !== "production") globalForPg.__pgPool = pool;

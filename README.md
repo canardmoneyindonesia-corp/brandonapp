@@ -126,6 +126,33 @@ the prompt on the Today screen, or Share → Add to Home Screen on iOS.
 
 ---
 
+## Deploying to Vercel
+
+1. Import the repo. The build command is already `node scripts/gen-assets.mjs &&
+   next build` — icons and placeholder photos are generated at build time, which is
+   why `public/icons/` and `public/seed/` stay out of git.
+2. Set `DATABASE_URL` to the same Neon string you use locally. Keep the `-pooler`
+   host: every concurrent function opens its own pool, and the pooler is what makes
+   that safe. `src/lib/db.ts` drops the per-instance cap to 3 when `VERCEL` is set.
+3. Attach a **Vercel Blob** store to the project. That injects
+   `BLOB_READ_WRITE_TOKEN`, which is what flips photo uploads from the local
+   `data/uploads/` folder to Blob — see `src/lib/storage.ts`. Without it, uploads
+   fail on Vercel, because serverless filesystems are read-only outside `/tmp` and
+   `/tmp` does not survive between invocations.
+4. Optional: `WHATSAPP_*` if you're going live, and point the Meta webhook at the
+   deployed `/api/whatsapp/webhook`.
+
+The database itself is already seeded — `npm run db:reset` is a local operation
+against `DATABASE_URL` and is not part of the deploy.
+
+> **There is no authentication.** Anyone with the deployment URL can read revenue
+> and create or delete bookings. `public/robots.txt` keeps it out of search
+> results, but that is obscurity, not access control. Before this holds real guest
+> data, put a password gate in front of it or enable Vercel's deployment
+> protection.
+
+---
+
 ## Layout
 
 ```
