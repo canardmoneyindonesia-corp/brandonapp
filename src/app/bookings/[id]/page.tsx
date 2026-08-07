@@ -17,8 +17,10 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   if (!booking) notFound();
   const payments = await getBookingPayments(id);
 
+  // Guests pay on arrival, so this is a record of what was taken, not a debt.
   const paid = payments.reduce((s, p) => s + p.amount, 0);
-  const due = booking.total_amount - paid;
+  const unrecorded = booking.total_amount - paid;
+  const settled = unrecorded <= 0;
   const waNumber = booking.guest_phone.replace(/\D/g, "");
   const waText = encodeURIComponent(
     `Hi ${booking.guest_name}, this is about your booking ${booking.code} at ${booking.unit_name} on ${fmtDateLong(
@@ -59,8 +61,11 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={booking.status} />
               <SourceTag source={booking.source} />
-              {due > 0 && booking.status !== "cancelled" && <Pill tone="warn">{idr(due)} outstanding</Pill>}
-              {due <= 0 && <Pill tone="good">Paid in full</Pill>}
+              {settled ? (
+                <Pill tone="good">Payment recorded</Pill>
+              ) : (
+                booking.status !== "cancelled" && <Pill tone="neutral">Payment not recorded</Pill>
+              )}
             </div>
 
             <div className="mt-5 flex items-start gap-4">
@@ -123,7 +128,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             ) : (
               <p className="mb-5 text-sm text-ink-2">Nothing received yet.</p>
             )}
-            <PaymentForm bookingId={booking.id} due={Math.max(0, due)} />
+            <PaymentForm bookingId={booking.id} due={Math.max(0, unrecorded)} />
           </section>
         </div>
 
@@ -146,17 +151,16 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               <span className="tabular">{idr(booking.total_amount)}</span>
             </div>
             <div className="mt-1.5 flex items-center justify-between text-[14px] text-ink-2">
-              <span>Received</span>
+              <span>Recorded</span>
               <span className="tabular">{idr(paid)}</span>
             </div>
-            <div
-              className={`mt-1.5 flex items-center justify-between text-[15px] font-semibold ${
-                due > 0 ? "text-[var(--color-warn)]" : "text-[var(--color-good)]"
-              }`}
-            >
-              <span>{due > 0 ? "Balance due" : "Settled"}</span>
-              <span className="tabular">{idr(Math.max(0, due))}</span>
-            </div>
+            {!settled && (
+              <p className="mt-3 rounded-lg bg-soft px-3 py-2 text-[12px] leading-snug text-ink-2">
+                {paid === 0
+                  ? "No payment logged yet — record it once the guest pays on arrival."
+                  : `${idr(unrecorded)} of this booking has not been logged as a payment.`}
+              </p>
+            )}
           </div>
 
           <div className="px-1">

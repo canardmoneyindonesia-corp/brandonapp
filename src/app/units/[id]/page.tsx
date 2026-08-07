@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Icon from "@/components/Icon";
 import BookingRow from "@/components/BookingRow";
 import PhotoManager from "@/components/PhotoManager";
+import PhotoCarousel from "@/components/PhotoCarousel";
 import DangerButton from "@/components/DangerButton";
 import { EmptyState, Page, PageHeader, Pill, SectionTitle } from "@/components/ui";
 import { getBookings, getPricingRules, getUnit, getUnitStats } from "@/lib/queries";
@@ -65,20 +66,26 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
         }
       />
 
-      {/* Airbnb-style gallery: one hero, four supporting shots. */}
+      {/* Airbnb-style gallery on a real screen; a swipeable carousel on a phone,
+          where the four supporting shots would otherwise be unreachable. */}
       {unit.photos.length > 0 && (
-        <div className="mb-8 grid gap-2 overflow-hidden rounded-2xl sm:grid-cols-4 sm:grid-rows-2">
-          <div className="sm:col-span-2 sm:row-span-2" style={{ aspectRatio: "4/3" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={hero.url} alt={hero.caption} className="h-full w-full object-cover" />
+        <>
+          <div className="mb-6 sm:hidden">
+            <PhotoCarousel photos={unit.photos} rounded="rounded-2xl" aspect="4/3" />
           </div>
-          {rest.slice(0, 4).map((p) => (
-            <div key={p.id} className="hidden sm:block">
+          <div className="mb-8 hidden gap-2 overflow-hidden rounded-2xl sm:grid sm:grid-cols-4 sm:grid-rows-2">
+            <div className="sm:col-span-2 sm:row-span-2" style={{ aspectRatio: "4/3" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.url} alt={p.caption} className="h-full w-full object-cover" />
+              <img src={hero.url} alt={hero.caption} className="h-full w-full object-cover" />
             </div>
-          ))}
-        </div>
+            {rest.slice(0, 4).map((p) => (
+              <div key={p.id}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.url} alt={p.caption} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <div className="grid gap-8 lg:grid-cols-3">

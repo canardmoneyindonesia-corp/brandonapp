@@ -56,11 +56,30 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
+  /* Stops iOS inflating body copy in landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   /* Room for the mobile tab bar + iOS home indicator. */
   padding-bottom: env(safe-area-inset-bottom);
+  /* A stray wide child should scroll inside its own container, never drag the
+     whole page sideways. */
+  overflow-x: hidden;
+}
+
+/* Long unbroken strings — a pasted URL in a note, a guest name with no spaces —
+   must not widen their container on a 320px screen. */
+h1,
+h2,
+p,
+li,
+dd,
+dt,
+td,
+th {
+  overflow-wrap: break-word;
 }
 
 *:focus-visible {
@@ -194,6 +213,27 @@ body {
   transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
   animation: shimmer 1.4s infinite;
+}
+
+/* iOS Safari zooms the whole page when a focused input is under 16px. Every
+   form control gets bumped on small screens so tapping a field never shifts
+   the layout out from under the operator. */
+@media (max-width: 640px) {
+  .input,
+  .input-lg,
+  input.input,
+  select.input,
+  textarea.input {
+    font-size: 16px;
+  }
+}
+
+/* Coarse pointers have no hover, so any control that only appears on hover is
+   unreachable. Reveal them permanently on touch. */
+@media (hover: none) {
+  .reveal-on-hover {
+    opacity: 1 !important;
+  }
 }
 
 @media print {

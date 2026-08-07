@@ -38,10 +38,10 @@ export default function RevenueChart({ daily }: { daily: DailyPoint[] }) {
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-2 sm:gap-3">
         {/* y axis */}
         <div
-          className="relative w-14 shrink-0 text-right text-[10px] tabular text-ink-3"
+          className="relative w-9 shrink-0 text-right text-[9px] tabular text-ink-3 sm:w-14 sm:text-[10px]"
           style={{ height: CHART_H }}
         >
           {ticks.map((t, i) => (
@@ -73,6 +73,10 @@ export default function RevenueChart({ daily }: { daily: DailyPoint[] }) {
                   className="group relative flex h-full flex-1 items-end justify-center gap-[2px]"
                   onMouseEnter={() => setHover(i)}
                   onFocus={() => setHover(i)}
+                  // Touch devices never fire mouseenter, so the readout would be
+                  // permanently empty on a phone without these.
+                  onTouchStart={() => setHover(i)}
+                  onClick={() => setHover(i)}
                   tabIndex={-1}
                 >
                   {hover === i && <div className="absolute inset-0 -z-10 bg-soft" />}

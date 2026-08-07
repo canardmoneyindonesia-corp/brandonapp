@@ -78,11 +78,11 @@ export default async function DashboardPage() {
           href="/schedule"
         />
         <StatTile
-          label="Unpaid balance"
-          value={idr(kpis.outstanding)}
-          sub="across all open bookings"
+          label="Next 7 days"
+          value={idr(kpis.revenue_week)}
+          sub={`${kpis.bookings_week} booking${kpis.bookings_week === 1 ? "" : "s"} ahead`}
           icon="bookings"
-          href="/bookings"
+          href="/bookings?range=week"
         />
         <StatTile
           label="Unread messages"
@@ -94,7 +94,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* month strip */}
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
         <MiniStat label="Revenue MTD" value={idr(kpis.revenue_month)} />
         <MiniStat label="Expenses MTD" value={idr(kpis.expenses_month)} />
         <MiniStat
@@ -249,9 +249,9 @@ function MiniStat({
   const color =
     tone === "good" ? "text-[var(--color-good)]" : tone === "bad" ? "text-[var(--color-bad)]" : "text-ink";
   return (
-    <div className="rounded-xl bg-soft px-4 py-3">
+    <div className="rounded-xl bg-soft px-3 py-2.5 sm:px-4 sm:py-3">
       <p className="text-[12px] font-medium text-ink-2">{label}</p>
-      <p className={`mt-0.5 text-[17px] font-semibold tabular ${color}`}>{value}</p>
+      <p className={`mt-0.5 text-[clamp(0.9rem,3.8vw,1.0625rem)] font-semibold tabular ${color}`}>{value}</p>
     </div>
   );
 }

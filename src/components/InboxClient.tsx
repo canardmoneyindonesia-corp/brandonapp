@@ -110,7 +110,9 @@ export default function InboxClient({
     : [];
 
   return (
-    <div className="grid h-[calc(100vh-9.5rem)] grid-cols-1 overflow-hidden rounded-2xl border border-hairline lg:h-[calc(100vh-8rem)] lg:grid-cols-[340px_1fr]">
+    // dvh, not vh: mobile browsers shrink the viewport when the URL bar
+    // retracts, and vh would leave the composer under the tab bar.
+    <div className="grid h-[calc(100dvh-13rem)] min-h-[26rem] grid-cols-1 overflow-hidden rounded-2xl border border-hairline sm:h-[calc(100dvh-14rem)] lg:h-[calc(100dvh-9rem)] lg:grid-cols-[minmax(260px,340px)_1fr]">
       {/* ------------------------------------------------------ thread list */}
       <div className={`flex min-h-0 flex-col border-r border-hairline ${contact ? "hidden lg:flex" : "flex"}`}>
         <div className="border-b border-hairline p-3">

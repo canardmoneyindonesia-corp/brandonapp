@@ -4,6 +4,9 @@ import { StatusBadge } from "./ui";
 import { fmtDateFull, fmtTime, hoursLabel, idr, isSameDay } from "@/lib/format";
 import type { BookingWithUnit } from "@/lib/types";
 
+// No "amount due" anywhere: guests settle on arrival, so a booking is never
+// carrying a balance the operator needs to chase.
+
 export default function BookingRow({
   booking: b,
   showDate = true,
@@ -13,7 +16,6 @@ export default function BookingRow({
 }) {
   const start = new Date(b.starts_at);
   const today = isSameDay(start, new Date());
-  const due = b.total_amount - b.paid_amount;
 
   return (
     <Link
@@ -32,16 +34,11 @@ export default function BookingRow({
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-[15px] font-semibold">{b.guest_name}</p>
-          {due > 0 && b.status !== "cancelled" && b.status !== "no_show" && (
-            <span className="badge bg-[var(--color-warn-soft)] text-[var(--color-warn)]">Due {idr(due)}</span>
-          )}
-        </div>
-        <p className="truncate text-[13px] text-ink-2">
+        <p className="truncate text-[14px] font-semibold sm:text-[15px]">{b.guest_name}</p>
+        <p className="truncate text-[12px] text-ink-2 sm:text-[13px]">
           {b.unit_name} · {b.guests} guest{b.guests > 1 ? "s" : ""} · {b.code}
         </p>
-        <p className="mt-0.5 truncate text-[13px] text-ink-2">
+        <p className="mt-0.5 truncate text-[12px] text-ink-2 sm:text-[13px]">
           <span className={today ? "font-semibold text-ink" : ""}>
             {showDate ? (today ? "Today" : fmtDateFull(start)) : ""}
           </span>
@@ -51,7 +48,9 @@ export default function BookingRow({
       </div>
 
       <div className="shrink-0 text-right">
-        <p className="text-[15px] font-semibold tabular">{idr(b.total_amount)}</p>
+        <p className="whitespace-nowrap text-[13px] font-semibold tabular sm:text-[15px]">
+          {idr(b.total_amount)}
+        </p>
         <div className="mt-1">
           <StatusBadge status={b.status} />
         </div>

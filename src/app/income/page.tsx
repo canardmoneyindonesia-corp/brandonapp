@@ -83,7 +83,7 @@ export default async function IncomePage({ searchParams }: { searchParams: Promi
         <StatTile
           label="Cash collected"
           value={idr(report.collected)}
-          sub={`${idr(report.outstanding)} still owed`}
+          sub={`${report.byMethod.reduce((s, m) => s + m.count, 0)} payments logged`}
           icon="check"
         />
       </div>

@@ -28,10 +28,12 @@ export function PageHeader({
           {back.label}
         </Link>
       )}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-[26px] font-semibold leading-tight tracking-tight sm:text-[30px]">{title}</h1>
-          {subtitle && <p className="mt-1 text-[15px] text-ink-2">{subtitle}</p>}
+      <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-4">
+        <div className="min-w-0">
+          <h1 className="text-[clamp(1.4rem,6vw,1.875rem)] font-semibold leading-tight tracking-tight">
+            {title}
+          </h1>
+          {subtitle && <p className="mt-1 text-[14px] leading-snug text-ink-2 sm:text-[15px]">{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -77,8 +79,12 @@ export function StatTile({
         <p className="text-[13px] font-medium text-ink-2">{label}</p>
         {icon && <Icon name={icon} size={18} className="text-ink-3" />}
       </div>
-      <p className="mt-2 text-[24px] font-semibold leading-none tracking-tight sm:text-[28px]">{value}</p>
-      <div className="mt-2 flex items-center gap-2">
+      {/* Rupiah totals run long (Rp 13.784.000). Clamping to the viewport keeps
+          them whole at 320px instead of overflowing a half-width tile. */}
+      <p className="mt-2 text-[clamp(1.125rem,5.2vw,1.75rem)] font-semibold leading-none tracking-tight tabular">
+        {value}
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5">
         {delta && (
           <span
             className={`inline-flex items-center gap-0.5 text-[12px] font-semibold ${
@@ -89,7 +95,7 @@ export function StatTile({
             {Math.abs(delta.pct).toFixed(0)}%
           </span>
         )}
-        {sub && <span className="text-[12px] text-ink-2">{sub}</span>}
+        {sub && <span className="text-[12px] leading-snug text-ink-2">{sub}</span>}
       </div>
     </div>
   );

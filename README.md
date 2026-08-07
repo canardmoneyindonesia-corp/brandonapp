@@ -54,7 +54,7 @@ safe version that refuses to touch an existing schema.
 
 | Route | Purpose |
 |---|---|
-| `/` | Today: revenue, occupancy, unpaid balance, unread messages, today's timeline, next bookings |
+| `/` | Today: revenue, occupancy, next 7 days, unread messages, today's timeline, next bookings |
 | `/units` `/units/[id]` | Unit cards with photo carousels; detail page with gallery, amenities, photo manager, stats, applicable pricing rules |
 | `/schedule` | Day timeline (units × 24h) with a live "now" line, week strip, per-unit filter, week heat table |
 | `/bookings` `/bookings/[id]` | Filterable log; detail with price breakdown, status switcher, payments ledger |
@@ -63,6 +63,25 @@ safe version that refuses to touch an existing schema.
 | `/pricing` | Rule list with on/off toggles, rule builder, and a price simulator running the real engine |
 | `/inbox` | WhatsApp-style threads, quick-reply templates, guest booking history, one-tap "Book" |
 | `/settings` | Business profile, WhatsApp connection guide, data counts, install prompt |
+
+---
+
+## Two deliberate design decisions
+
+**No receivables.** Guests settle on arrival, so nothing in the app tracks a
+balance owed — no "amount due" badges, no outstanding-balance totals. Payments are
+still recorded per booking, but as a log of what was taken rather than a debt to
+chase. `Payment recorded` / `Payment not recorded` is the only distinction drawn.
+
+**Mobile is the primary target**, since this gets used standing in a lobby. Money
+figures use `clamp()` so a `Rp 13.784.000` total stays whole at 320px instead of
+overflowing a half-width tile; form controls jump to 16px under `sm` so iOS Safari
+does not zoom the page on focus; hover-only controls (carousel arrows, photo
+delete) are revealed permanently under `@media (hover: none)`; the photo gallery
+becomes a swipeable carousel below `sm`; and the inbox is sized in `dvh` so a
+retracting URL bar cannot push the composer under the tab bar. Wide content —
+the schedule grid, the income tables — scrolls inside its own container, never
+the page body.
 
 ---
 

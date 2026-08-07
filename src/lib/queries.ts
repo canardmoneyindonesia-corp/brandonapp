@@ -159,16 +159,19 @@ export async function getScheduleRange(from: Date, to: Date): Promise<BookingWit
 
 /* ----------------------------------------------------------- dashboard --- */
 
+// Guests settle on arrival, so this business has no receivables — nothing here
+// tracks a balance owed.
 export interface DashboardKpis {
   revenue_today: number;
+  revenue_week: number;
   revenue_month: number;
   expenses_month: number;
   bookings_today: number;
+  bookings_week: number;
   hours_today: number;
   hours_month: number;
   active_units: number;
   unread_messages: number;
-  outstanding: number;
 }
 
 export async function getDashboard(): Promise<DashboardKpis> {
@@ -196,15 +199,18 @@ export async function getDashboard(): Promise<DashboardKpis> {
                    AND status NOT IN ('cancelled','no_show')), 0) AS hours_month,
       (SELECT COUNT(*) FROM units WHERE status = 'active')::int AS active_units,
       COALESCE((SELECT SUM(unread) FROM wa_contacts), 0)::int AS unread_messages,
-      COALESCE((SELECT SUM(b.total_amount) - COALESCE(SUM(p.paid), 0) FROM bookings b
-                 LEFT JOIN (SELECT booking_id, SUM(amount) paid FROM payments GROUP BY booking_id) p
-                        ON p.booking_id = b.id
-                 WHERE b.status IN ('confirmed','checked_in','completed')), 0) AS outstanding`
+      COALESCE((SELECT SUM(total_amount) FROM bookings
+                 WHERE starts_at >= now() AND starts_at < now() + interval '7 days'
+                   AND status NOT IN ('cancelled','no_show')), 0) AS revenue_week,
+      (SELECT COUNT(*) FROM bookings
+         WHERE starts_at >= now() AND starts_at < now() + interval '7 days'
+           AND status NOT IN ('cancelled','no_show'))::int AS bookings_week`
   );
   return (
     row ?? {
-      revenue_today: 0, revenue_month: 0, expenses_month: 0, bookings_today: 0,
-      hours_today: 0, hours_month: 0, active_units: 0, unread_messages: 0, outstanding: 0,
+      revenue_today: 0, revenue_week: 0, revenue_month: 0, expenses_month: 0,
+      bookings_today: 0, bookings_week: 0, hours_today: 0, hours_month: 0,
+      active_units: 0, unread_messages: 0,
     }
   );
 }
@@ -231,7 +237,6 @@ export interface IncomeReport {
   revenue: number;
   expenses: number;
   collected: number;
-  outstanding: number;
   bookings: number;
   hours: number;
   prevRevenue: number;
@@ -310,20 +315,12 @@ export async function getIncome(month: Date): Promise<IncomeReport> {
   ]);
 
   const expenses = byCategory.reduce((s, r) => s + Number(r.amount), 0);
-  const outstanding = await one<{ v: number }>(
-    `SELECT COALESCE(SUM(b.total_amount) - COALESCE(SUM(p.paid), 0), 0) AS v
-       FROM bookings b
-       LEFT JOIN (SELECT booking_id, SUM(amount) paid FROM payments GROUP BY booking_id) p ON p.booking_id = b.id
-      WHERE b.starts_at >= $1 AND b.starts_at < $2 AND b.status IN ('confirmed','checked_in','completed')`,
-    [from, to]
-  );
 
   return {
     monthStart: from,
     revenue: Number(totals?.revenue ?? 0),
     expenses,
     collected: Number(totals?.collected ?? 0),
-    outstanding: Number(outstanding?.v ?? 0),
     bookings: totals?.bookings ?? 0,
     hours: Number(totals?.hours ?? 0),
     prevRevenue: Number(prev?.revenue ?? 0),

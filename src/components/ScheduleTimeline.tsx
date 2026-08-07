@@ -33,11 +33,13 @@ export default function ScheduleTimeline({
 
   return (
     <div className="card overflow-hidden">
+      {/* The grid needs real width to stay legible, so it scrolls inside the
+          card rather than squeezing 24 columns onto a phone. */}
       <div className="overflow-x-auto">
-        <div className="min-w-[860px]">
+        <div className="min-w-[660px] sm:min-w-[860px]">
           {/* hour ruler */}
           <div className="flex border-b border-hairline bg-soft/60">
-            <div className="w-44 shrink-0 border-r border-hairline px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-2">
+            <div className="w-28 shrink-0 border-r border-hairline px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-2 sm:w-44 sm:px-3">
               Unit
             </div>
             <div className="relative flex-1">
@@ -58,8 +60,8 @@ export default function ScheduleTimeline({
             const rows = bookings.filter((b) => b.unit_id === unit.id);
             return (
               <div key={unit.id} className="flex border-b border-hairline last:border-b-0">
-                <div className="w-44 shrink-0 border-r border-hairline px-3 py-3">
-                  <Link href={`/units/${unit.id}`} className="block truncate text-[13px] font-semibold hover:underline">
+                <div className="w-28 shrink-0 border-r border-hairline px-2.5 py-3 sm:w-44 sm:px-3">
+                  <Link href={`/units/${unit.id}`} className="block truncate text-[12px] font-semibold hover:underline sm:text-[13px]">
                     {unit.name}
                   </Link>
                   <p className="truncate text-[11px] text-ink-2">
@@ -117,7 +119,7 @@ export default function ScheduleTimeline({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-hairline px-4 py-2.5 text-[11px] text-ink-2">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-hairline px-3 py-2.5 text-[11px] text-ink-2 sm:px-4">
         <Legend className="bg-[var(--color-info-soft)] border-[#bcd9f6]" label="Confirmed" />
         <Legend className="bg-[var(--color-good-soft)] border-[#b6ddb8]" label="Checked in" />
         <Legend className="bg-[var(--color-warn-soft)] border-[#f0d9ac] border-dashed" label="Inquiry" />

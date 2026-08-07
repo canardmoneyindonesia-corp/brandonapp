@@ -58,7 +58,7 @@ export default function PhotoManager({ unitId, photos }: { unitId: number; photo
                 Cover
               </span>
             )}
-            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/65 to-transparent px-2.5 pb-2 pt-6 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div className="reveal-on-hover absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/65 to-transparent px-2.5 pb-2 pt-6 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               <span className="truncate text-[12px] font-medium text-white">{p.caption || "Photo"}</span>
               <span className="flex gap-1.5">
                 {!p.is_cover && (

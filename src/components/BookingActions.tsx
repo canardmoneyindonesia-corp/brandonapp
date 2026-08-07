@@ -123,11 +123,11 @@ export function PaymentForm({
       </div>
 
       {due > 0 && (
-        <div className="flex gap-2">
-          <button type="button" className="chip" onClick={() => setAmount(due)}>
-            Full balance {idr(due)}
+        <div className="no-scrollbar flex gap-2 overflow-x-auto">
+          <button type="button" className="chip shrink-0" onClick={() => setAmount(due)}>
+            Full amount {idr(due)}
           </button>
-          <button type="button" className="chip" onClick={() => setAmount(Math.round(due / 2 / 1000) * 1000)}>
+          <button type="button" className="chip shrink-0" onClick={() => setAmount(Math.round(due / 2 / 1000) * 1000)}>
             Half
           </button>
         </div>

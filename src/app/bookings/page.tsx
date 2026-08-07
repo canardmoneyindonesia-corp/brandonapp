@@ -47,13 +47,9 @@ export default async function BookingsPage({
     );
   }
 
-  const revenue = bookings
-    .filter((b) => b.status !== "cancelled" && b.status !== "no_show")
-    .reduce((s, b) => s + b.total_amount, 0);
-  const due = bookings.reduce(
-    (s, b) => (b.status === "cancelled" || b.status === "no_show" ? s : s + Math.max(0, b.total_amount - b.paid_amount)),
-    0
-  );
+  const live = bookings.filter((b) => b.status !== "cancelled" && b.status !== "no_show");
+  const revenue = live.reduce((s, b) => s + b.total_amount, 0);
+  const hours = live.reduce((s, b) => s + Number(b.hours), 0);
 
   const q = (over: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
@@ -66,7 +62,7 @@ export default async function BookingsPage({
     <Page>
       <PageHeader
         title="Bookings"
-        subtitle={`${bookings.length} shown · ${idr(revenue)} booked · ${idr(due)} unpaid`}
+        subtitle={`${bookings.length} shown · ${hours}h · ${idr(revenue)} booked`}
         action={
           <Link href="/bookings/new" className="btn-primary">
             <Icon name="plus" size={17} />
