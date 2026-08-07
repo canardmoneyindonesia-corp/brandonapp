@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
-import fs from "node:fs/promises";
-import path from "node:path";
 import { query } from "@/lib/db";
 import { fail, handle, int, ok, str } from "@/lib/api";
+import { deleteUpload } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -42,11 +41,7 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
     if (!rows.length) return fail("Photo not found", 404);
     const { url, unit_id, is_cover } = rows[0];
 
-    // Only uploaded files live on disk — seeded /seed/* assets are shared.
-    if (url.startsWith("/api/uploads/")) {
-      const file = path.basename(url);
-      await fs.rm(path.join(process.cwd(), "data", "uploads", file), { force: true });
-    }
+    await deleteUpload(url);
     if (is_cover) {
       await query(
         `UPDATE unit_photos SET is_cover = true WHERE id = (
